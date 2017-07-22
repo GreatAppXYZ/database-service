@@ -48,7 +48,7 @@ dependencies {
 	compile 'org.springframework.cloud:spring-cloud-starter-config'
 	compile 'org.springframework.boot:spring-boot-starter-web'
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
-	compile 'xyz.my-app:libs:0.0.13'
+	compile 'xyz.my-app:libs:0.0.14'
 	compile 'org.flywaydb:flyway-core:3.0'
 	deployment 'org.flywaydb:flyway-core:3.0'
 	testCompile 'org.mockito:mockito-core:2.8.9'
