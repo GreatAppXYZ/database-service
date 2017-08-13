@@ -5,33 +5,31 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.OK;
 
-import xyz.greatapp.database.api.interfaces.DatabaseService;
-import xyz.greatapp.database.libs.ServiceLogger;
-import xyz.greatapp.database.model.InsertQuery;
-import xyz.my_app.libs.service.ServiceResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
+import xyz.greatapp.database.api.interfaces.DatabaseService;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
+import xyz.greatapp.libs.service.requests.database.InsertQueryRQ;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseController_InsertTest
 {
     private DatabaseController controller;
-    private InsertQuery insertQuery;
+    private InsertQueryRQ insertQuery;
 
     @Mock
     private DatabaseService service;
-    @Mock
-    private ServiceLogger serviceLogger;
 
     @Before
     public void setUp() throws Exception
     {
-        controller = new DatabaseController(service, serviceLogger);
-        insertQuery = new InsertQuery();
+        controller = new DatabaseController(service);
+        insertQuery = new InsertQueryRQ("", new ColumnValue[0], "");
     }
 
     @Test
@@ -44,7 +42,7 @@ public class DatabaseController_InsertTest
         ResponseEntity<ServiceResult> response = controller.insert(insertQuery);
 
         // then
-        ControllerAssertions.assertFailedResponse(response, serviceLogger);
+        ControllerAssertions.assertFailedResponse(response);
     }
 
     @Test

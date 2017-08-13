@@ -6,10 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 
-import xyz.greatapp.database.api.DatabaseController;
-import xyz.greatapp.database.libs.ServiceLogger;
-import xyz.my_app.libs.service.ServiceResult;
-
 import java.sql.SQLException;
 
 import org.json.JSONException;
@@ -20,8 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
-import xyz.my_app.libs.service.requests.database.Filter;
-import xyz.my_app.libs.service.requests.database.SelectQuery;
+import xyz.greatapp.database.api.DatabaseController;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
+import xyz.greatapp.libs.service.requests.database.SelectQueryRQ;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseController_SelectIntegrationTest extends IntegrationTest
@@ -31,7 +29,7 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
     @Before
     public void setUp() throws Exception
     {
-        databaseController = new DatabaseController(getDatabaseService(), new ServiceLogger());
+        databaseController = new DatabaseController(getDatabaseService());
     }
 
     @After
@@ -46,7 +44,7 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
         //given empty database
 
         //when
-        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQuery("SELECT * from dummy;", new Filter[0]));
+        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQueryRQ("SELECT * from dummy;", new ColumnValue[0]));
 
         //then
         assertEquals(INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
@@ -60,7 +58,7 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
         givenThisExecutedQuery("CREATE TABLE dummy (id INTEGER);");
 
         //when
-        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQuery("dummy", new Filter[0]));
+        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQueryRQ("dummy", new ColumnValue[0]));
 
         //then
         assertEquals(OK, responseEntity.getStatusCode());
@@ -68,13 +66,13 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
     }
 
     @Test
-    public void shouldReturnSuccessfulResponseIfFiltersAreNull() throws SQLException
+    public void shouldReturnSuccessfulResponseIfColumnValuesAreNull() throws SQLException
     {
         //given
         givenThisExecutedQuery("CREATE TABLE dummy (id INTEGER);");
 
         //when
-        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQuery("dummy", null));
+        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQueryRQ("dummy", null));
 
         //then
         assertEquals(OK, responseEntity.getStatusCode());
@@ -89,7 +87,7 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
         givenThisExecutedQuery("INSERT INTO dummy VALUES (1, 'abc')");
 
         //when
-        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQuery("dummy", new Filter[0]));
+        ResponseEntity<ServiceResult> responseEntity = databaseController.select(new SelectQueryRQ("dummy", new ColumnValue[0]));
 
         //then
         JSONObject jsonObject = new JSONObject(responseEntity.getBody().getObject());
@@ -106,7 +104,7 @@ public class DatabaseController_SelectIntegrationTest extends IntegrationTest
 
         //when
         ResponseEntity<ServiceResult> responseEntity = databaseController.select(
-                new SelectQuery("dummy", new Filter[] {new Filter("id", "2")}));
+                new SelectQueryRQ("dummy", new ColumnValue[] {new ColumnValue("id", "2")}));
 
         //then
         JSONObject jsonObject = new JSONObject(responseEntity.getBody().getObject());

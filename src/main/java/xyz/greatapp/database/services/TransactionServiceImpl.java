@@ -4,7 +4,7 @@ import xyz.greatapp.database.api.interfaces.TransactionService;
 import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import xyz.my_app.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.context.ThreadContextService;
 
 @Component
 public class TransactionServiceImpl extends BaseServiceImpl implements TransactionService

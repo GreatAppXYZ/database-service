@@ -5,9 +5,9 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
+import xyz.greatapp.database.adapter.environments.DatabaseEnvironment;
 import xyz.greatapp.database.util.Computable;
 import xyz.greatapp.database.util.Memoizer;
-import xyz.greatapp.database.adapter.environments.DatabaseEnvironment;
 
 @Component
 public class DataSourceFactory
@@ -35,8 +35,6 @@ public class DataSourceFactory
         final DataSource dataSource = dataSources.compute(environment);
         if (dataSource == null)
             throw new RuntimeException("DataSource cannot be null!");
-
-        dataSource.getConnection().prepareStatement(environment.getSearchPathSettingQuery()).execute();
         return dataSource;
     }
 }

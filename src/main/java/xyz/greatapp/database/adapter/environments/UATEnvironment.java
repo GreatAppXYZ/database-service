@@ -75,7 +75,7 @@ public class UATEnvironment extends DatabaseEnvironment
         {
             return false;
         }
-        DevEnvironment that = (DevEnvironment) obj;
+        UATEnvironment that = (UATEnvironment) obj;
         return getDatabasePath().equals(that.getDatabasePath());
     }
 

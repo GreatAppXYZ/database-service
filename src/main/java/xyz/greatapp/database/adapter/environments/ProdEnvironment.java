@@ -75,7 +75,7 @@ public class ProdEnvironment extends DatabaseEnvironment
         {
             return false;
         }
-        DevEnvironment that = (DevEnvironment) obj;
+        ProdEnvironment that = (ProdEnvironment) obj;
         return getDatabasePath().equals(that.getDatabasePath());
     }
 

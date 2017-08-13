@@ -1,39 +1,36 @@
 package xyz.greatapp.database.api;
 
-import static xyz.greatapp.database.api.ControllerAssertions.assertFailedResponse;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
+import static xyz.greatapp.database.api.ControllerAssertions.assertFailedResponse;
 
-import xyz.greatapp.database.libs.ServiceLogger;
-import xyz.greatapp.database.api.interfaces.DatabaseService;
-import xyz.my_app.libs.service.ServiceResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
-import xyz.my_app.libs.service.requests.database.Filter;
-import xyz.my_app.libs.service.requests.database.SelectQuery;
+import xyz.greatapp.database.api.interfaces.DatabaseService;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
+import xyz.greatapp.libs.service.requests.database.SelectQueryRQ;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseController_SelectTest
 {
     private DatabaseController controller;
-    private SelectQuery selectQuery;
+    private SelectQueryRQ selectQuery;
     @Mock
     private DatabaseService service;
-    @Mock
-    private ServiceLogger serviceLogger;
 
     @Before
     public void setUp() throws Exception
     {
-        controller = new DatabaseController(service, serviceLogger);
-        selectQuery = new SelectQuery("", new Filter[0]);
+        controller = new DatabaseController(service);
+        selectQuery = new SelectQueryRQ("", new ColumnValue[0]);
     }
 
     @Test
@@ -46,7 +43,7 @@ public class DatabaseController_SelectTest
         ResponseEntity<ServiceResult> response = controller.select(selectQuery);
 
         // then
-        assertFailedResponse(response, serviceLogger);
+        assertFailedResponse(response);
     }
 
     @Test
@@ -85,10 +82,10 @@ public class DatabaseController_SelectTest
     }
 
     @Test
-    public void shouldReturnBadRequestErrorIfSelectQueryHasNullQuery()
+    public void shouldReturnBadRequestErrorIfSelectQueryRQHasNullQuery()
     {
         //given
-        SelectQuery query = new SelectQuery(null, new Filter[0]);
+        SelectQueryRQ query = new SelectQueryRQ(null, new ColumnValue[0]);
 
         //when
         ResponseEntity<ServiceResult> select = controller.select(query);
@@ -98,10 +95,10 @@ public class DatabaseController_SelectTest
     }
 
     @Test
-    public void shouldReturnErrorMessageIfSelectQueryHasNullQuery()
+    public void shouldReturnErrorMessageIfSelectQueryRQHasNullQuery()
     {
         //given
-        SelectQuery query = new SelectQuery(null, new Filter[0]);
+        SelectQueryRQ query = new SelectQueryRQ(null, new ColumnValue[0]);
 
         //when
         ResponseEntity<ServiceResult> select = controller.select(query);

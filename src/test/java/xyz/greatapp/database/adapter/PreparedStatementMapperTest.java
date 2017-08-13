@@ -1,5 +1,14 @@
 package xyz.greatapp.database.adapter;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -7,35 +16,26 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import xyz.my_app.libs.service.requests.database.Filter;
-
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Types;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementMapperTest
 {
-    private static final Filter[] NO_VALUES = null;
+    private static final ColumnValue[] NO_VALUES = null;
     private static final String STRING_VALUE = "Any String";
     private static final int INTEGER_VALUE = 10;
     private static final boolean BOOLEAN_VALUE = Boolean.TRUE;
     private static final double DOUBLE_VALUE = 0.15d;
     private static final long LONG_VALUE = 15L;
-    private static final String[] STRING_ARRAY_VALUE = {"value1", "value2"};
-    private static final Filter[] VALID_VALUES = {
-            new Filter("column", null),
-            new Filter("column", STRING_VALUE),
-            new Filter("column", INTEGER_VALUE),
-            new Filter("column", BOOLEAN_VALUE),
-            new Filter("column", DOUBLE_VALUE),
-            new Filter("column", LONG_VALUE),
-            new Filter("column", STRING_ARRAY_VALUE)};
+    private static final String[] STRING_ARRAY_VALUE = { "value1", "value2" };
+    private static final ColumnValue[] VALID_VALUES = {
+            new ColumnValue("column", null),
+            new ColumnValue("column", STRING_VALUE),
+            new ColumnValue("column", INTEGER_VALUE),
+            new ColumnValue("column", BOOLEAN_VALUE),
+            new ColumnValue("column", DOUBLE_VALUE),
+            new ColumnValue("column", LONG_VALUE),
+            new ColumnValue("column", STRING_ARRAY_VALUE) };
     @Mock
     private PreparedStatement statement;
     @Mock
@@ -43,7 +43,7 @@ public class PreparedStatementMapperTest
     @Mock
     private Array anArray;
     private PreparedStatementMapper mapper;
-    private Filter stubObject = createStubObject();
+    private ColumnValue stubObject = createStubObject();
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -81,12 +81,12 @@ public class PreparedStatementMapperTest
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Unsupported SQL type for object : class java.lang.Enum");
 
-        mapper.map(statement, new Filter[]{stubObject});
+        mapper.map(statement, new ColumnValue[] { stubObject });
 
     }
 
-    private Filter createStubObject()
+    private ColumnValue createStubObject()
     {
-        return new Filter("column", Enum.class);
+        return new ColumnValue("column", Enum.class);
     }
 }

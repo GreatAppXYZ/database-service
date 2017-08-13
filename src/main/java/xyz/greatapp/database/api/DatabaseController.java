@@ -1,40 +1,39 @@
 package xyz.greatapp.database.api;
 
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.slf4j.helpers.Util.getCallingClass;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import xyz.greatapp.database.AppConfiguration;
-import xyz.greatapp.database.libs.ServiceLogger;
-import xyz.greatapp.database.api.interfaces.DatabaseService;
-import xyz.greatapp.database.model.InsertQuery;
-import xyz.my_app.libs.service.ServiceResult;
-import xyz.greatapp.database.model.UpdateQuery;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import xyz.my_app.libs.service.requests.database.SelectQuery;
+import xyz.greatapp.database.api.interfaces.DatabaseService;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.requests.database.DeleteQueryRQ;
+import xyz.greatapp.libs.service.requests.database.InsertQueryRQ;
+import xyz.greatapp.libs.service.requests.database.SelectQueryRQ;
+import xyz.greatapp.libs.service.requests.database.UpdateQueryRQ;
 
 @RestController
 public class DatabaseController
 {
     private final DatabaseService databaseService;
-    private final ServiceLogger logger;
-
-    @Autowired AppConfiguration appConfiguration;
+    private final Logger logger = getLogger(getCallingClass());
 
     @Autowired
-    public DatabaseController(DatabaseService databaseService, ServiceLogger logger)
+    public DatabaseController(DatabaseService databaseService)
     {
         this.databaseService = databaseService;
-        this.logger = logger;
     }
 
     @RequestMapping(method = POST, value = "/select")
-    public ResponseEntity<ServiceResult> select(@RequestBody SelectQuery query)
+    public ResponseEntity<ServiceResult> select(@RequestBody SelectQueryRQ query)
     {
         try
         {
@@ -51,14 +50,14 @@ public class DatabaseController
         }
     }
 
-    private boolean invalidParams(SelectQuery query)
+    private boolean invalidParams(SelectQueryRQ query)
     {
         return query == null ||
                 query.getTable() == null;
     }
 
     @RequestMapping(method = POST, value = "/selectList")
-    public ResponseEntity<ServiceResult> selectList(@RequestBody SelectQuery query) throws Exception
+    public ResponseEntity<ServiceResult> selectList(@RequestBody SelectQueryRQ query) throws Exception
     {
         try
         {
@@ -72,7 +71,7 @@ public class DatabaseController
     }
 
     @RequestMapping(method = POST, value = "/insert")
-    public ResponseEntity<ServiceResult> insert(@RequestBody InsertQuery query) throws Exception
+    public ResponseEntity<ServiceResult> insert(@RequestBody InsertQueryRQ query) throws Exception
     {
         try
         {
@@ -86,10 +85,14 @@ public class DatabaseController
     }
 
     @RequestMapping(method = POST, value = "/update")
-    public ResponseEntity<ServiceResult> update(@RequestBody UpdateQuery query) throws Exception
+    public ResponseEntity<ServiceResult> update(@RequestBody UpdateQueryRQ query) throws Exception
     {
         try
         {
+            if(invalidParams(query))
+            {
+                return new ResponseEntity<>(new ServiceResult(false, "must.have.filters"), BAD_REQUEST);
+            }
             return new ResponseEntity<>(databaseService.update(query), OK);
         }
         catch (Exception e)
@@ -97,5 +100,35 @@ public class DatabaseController
             logger.error(e.getMessage(), e);
             return new ResponseEntity<>(new ServiceResult(false, e.getMessage()), INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @RequestMapping(method = POST, value = "/delete")
+    public ResponseEntity<ServiceResult> update(@RequestBody DeleteQueryRQ query) throws Exception
+    {
+        try
+        {
+            if(invalidParams(query))
+            {
+                return new ResponseEntity<>(new ServiceResult(false, "must.have.filters"), BAD_REQUEST);
+            }
+            return new ResponseEntity<>(databaseService.delete(query), OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            return new ResponseEntity<>(new ServiceResult(false, e.getMessage()), INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private boolean invalidParams(UpdateQueryRQ query)
+    {
+        return query.getFilters() == null ||
+                query.getFilters().length == 0;
+    }
+
+    private boolean invalidParams(DeleteQueryRQ query)
+    {
+        return query.getFilters() == null ||
+                query.getFilters().length == 0;
     }
 }

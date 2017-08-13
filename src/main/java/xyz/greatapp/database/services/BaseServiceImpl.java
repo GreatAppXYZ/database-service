@@ -2,21 +2,21 @@ package xyz.greatapp.database.services;
 
 import xyz.greatapp.database.adapter.DataBaseAdapter;
 import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
-import xyz.my_app.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.context.ThreadContextService;
 
-public class BaseServiceImpl
+class BaseServiceImpl
 {
-    private final ThreadContextService _threadContextService;
-    private final DatabaseAdapterFactory queryAgentFactory;
+    private final ThreadContextService threadContextService;
+    private final DatabaseAdapterFactory databaseAdapterFactory;
 
-    BaseServiceImpl(ThreadContextService threadContextService, DatabaseAdapterFactory queryAgentFactory)
+    BaseServiceImpl(ThreadContextService threadContextService, DatabaseAdapterFactory databaseAdapterFactory)
     {
-        _threadContextService = threadContextService;
-        this.queryAgentFactory = queryAgentFactory;
+        this.threadContextService = threadContextService;
+        this.databaseAdapterFactory = databaseAdapterFactory;
     }
 
     DataBaseAdapter getDatabaseAdapter() throws Exception
     {
-        return queryAgentFactory.getDatabaseAdapter(_threadContextService.getEnvironment());
+        return databaseAdapterFactory.getDatabaseAdapter(threadContextService.getEnvironment());
     }
 }

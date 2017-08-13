@@ -8,8 +8,6 @@ import org.json.JSONObject;
 import javax.sql.DataSource;
 import java.sql.*;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-
 public class DataBaseAdapter
 {
     private final transient DataSource dataSource;
@@ -40,18 +38,17 @@ public class DataBaseAdapter
     /**
      * Executes an insert statement.
      *
-     * @param sql Insert sql query to be executed.
-     * @param id  Column name of the generated key to be returned from the query execution.
+     * @param builder Helper object that contains placeholders and build method
      * @return The generated key of the id column returned from the query execution.
      */
-    public long executeInsert(String sql, String id) throws Exception
+    public String executeInsert(DbBuilder builder) throws Exception
     {
-        try (Statement statement = getConnection().createStatement())
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(builder.sql()))
         {
-            statement.execute(sql, RETURN_GENERATED_KEYS);
-            ResultSet resultSet = statement.getGeneratedKeys();
+            preparedStatementMapper.map(preparedStatement, builder.values());
+            ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
-            return resultSet.getLong(id);
+            return resultSet.getString(1);
         }
         finally
         {
@@ -62,14 +59,15 @@ public class DataBaseAdapter
     /**
      * Executes and update statement.
      *
-     * @param sql Update statement to be executed.
+     * @param builder Helper object that contains placeholders and build method
      * @return The number of rows returned from the query.
      */
-    public int executeUpdate(String sql) throws Exception
+    public int executeUpdate(DbBuilder builder) throws Exception
     {
-        try (Statement statement = getConnection().createStatement())
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(builder.sql()))
         {
-            return statement.executeUpdate(sql);
+            preparedStatementMapper.map(preparedStatement, builder.values());
+            return preparedStatement.executeUpdate();
         }
         finally
         {
@@ -192,7 +190,8 @@ public class DataBaseAdapter
         return currentConnection() != null;
     }
 
-    Connection currentConnection() {
+    Connection currentConnection()
+    {
         return connection;
     }
 
@@ -210,7 +209,8 @@ public class DataBaseAdapter
         this.connection = null;
     }
 
-    SavepointProxyConnection getConnectionForFunctionalTests() throws SQLException {
+    SavepointProxyConnection getConnectionForFunctionalTests() throws SQLException
+    {
         return (SavepointProxyConnection) getConnection();
     }
 }

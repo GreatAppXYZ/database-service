@@ -1,20 +1,5 @@
 package xyz.greatapp.database.adapter;
 
-import xyz.greatapp.database.automation_database_driver.SavepointProxyConnection;
-import xyz.greatapp.database.util.DbBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import xyz.my_app.libs.service.requests.database.Filter;
-
-import javax.sql.DataSource;
-import java.sql.*;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
@@ -25,11 +10,29 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.sql.DataSource;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import xyz.greatapp.database.automation_database_driver.SavepointProxyConnection;
+import xyz.greatapp.database.util.DbBuilder;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
+
 @RunWith(MockitoJUnitRunner.class)
 public class DataBaseAdapterTest
 {
     private static final String ANY_SQL = "SELECT * FROM dummy;";
-    private static final Filter[] VALUES = new Filter[]{};
+    private static final ColumnValue[] VALUES = new ColumnValue[]{};
 
     private DataBaseAdapter databaseAdapter;
 
@@ -37,8 +40,6 @@ public class DataBaseAdapterTest
     private DataSource dataSource;
     @Mock
     private Connection connection;
-    @Mock
-    private Statement statement;
     @Mock
     private ResultSet resultSet;
     @Mock
@@ -53,14 +54,14 @@ public class DataBaseAdapterTest
     private  PreparedStatementMapper preparedStatementMapper;
     @Mock
     private SavepointProxyConnection savepointProxyConnection;
+    @Mock
+    private DbBuilder dbBuilder;
 
     @Before
     public void setUp() throws Exception
     {
         databaseAdapter = new TestableDataBaseAdapter();
         given(dataSource.getConnection()).willReturn(connection);
-        given(connection.createStatement()).willReturn(statement);
-        given(statement.getGeneratedKeys()).willReturn(resultSet);
         given(connection.prepareStatement(any())).willReturn(preparedStatement);
         given(preparedStatement.executeQuery()).willReturn(resultSet);
         given(builder.sql()).willReturn(ANY_SQL);
@@ -96,48 +97,38 @@ public class DataBaseAdapterTest
     public void executeInsertShouldCreateStatementOnConnection() throws Exception
     {
         //when
-        databaseAdapter.executeInsert("", "");
+        databaseAdapter.executeInsert(dbBuilder);
 
         //then
-        verify(connection).createStatement();
+        verify(connection).prepareStatement(null);
     }
 
     @Test
     public void executeInsertShouldExecuteOnStatement() throws Exception
     {
         //when
-        databaseAdapter.executeInsert("INSERT INTO dummy VALUES (1)", "");
+        databaseAdapter.executeInsert(dbBuilder);
 
         //then
-        verify(statement).execute("INSERT INTO dummy VALUES (1)", RETURN_GENERATED_KEYS);
+        verify(preparedStatement).executeQuery();
     }
 
     @Test
-    public void executeInsertShouldKeyOnResultSet() throws Exception
+    public void executeInsertShouldGetKeyOnResultSet() throws Exception
     {
         //when
-        databaseAdapter.executeInsert("query", "id");
+        databaseAdapter.executeInsert(dbBuilder);
 
         //then
         verify(resultSet).next();
-        verify(resultSet).getLong("id");
-    }
-
-    @Test
-    public void executeInsertShouldReturnGeneratedKeysOnStatement() throws Exception
-    {
-        //when
-        databaseAdapter.executeInsert("query", "");
-
-        //then
-        verify(statement).getGeneratedKeys();
+        verify(resultSet).getString(1);
     }
 
     @Test
     public void executeInsertShouldCloseConnection() throws Exception
     {
         //when
-        databaseAdapter.executeInsert("query", "");
+        databaseAdapter.executeInsert(dbBuilder);
 
         //then
         verify(connection).close();
@@ -147,27 +138,27 @@ public class DataBaseAdapterTest
     public void executeUpdateShouldCreateStatementOnConnection() throws Exception
     {
         //when
-        databaseAdapter.executeUpdate("");
+        databaseAdapter.executeUpdate(dbBuilder);
 
         //then
-        verify(connection).createStatement();
+        verify(connection).prepareStatement(null);
     }
 
     @Test
     public void executeUpdateShouldExecuteUpdateOnStatement() throws Exception
     {
         //when
-        databaseAdapter.executeUpdate("UPDATE dummy SET value = 1");
+        databaseAdapter.executeUpdate(dbBuilder);
 
         //then
-        verify(statement).executeUpdate("UPDATE dummy SET value = 1");
+        verify(preparedStatement).executeUpdate();
     }
 
     @Test
     public void executeUpdateShouldCloseConnection() throws Exception
     {
         //when
-        databaseAdapter.executeUpdate("query");
+        databaseAdapter.executeUpdate(dbBuilder);
 
         //then
         verify(connection).close();

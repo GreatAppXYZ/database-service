@@ -1,50 +1,68 @@
 package xyz.greatapp.database.services;
 
-import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
-import xyz.greatapp.database.api.interfaces.DatabaseService;
-import xyz.greatapp.database.model.InsertQuery;
-import xyz.greatapp.database.model.UpdateQuery;
-import xyz.greatapp.database.util.DbBuilder;
-import xyz.my_app.libs.service.ServiceResult;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.common.collect.ObjectArrays;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import xyz.my_app.libs.service.context.ThreadContextService;
-import xyz.my_app.libs.service.requests.database.Filter;
-import xyz.my_app.libs.service.requests.database.SelectQuery;
+import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
+import xyz.greatapp.database.api.interfaces.DatabaseService;
+import xyz.greatapp.database.util.DbBuilder;
+import xyz.greatapp.libs.service.Environment;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
+import xyz.greatapp.libs.service.requests.database.DeleteQueryRQ;
+import xyz.greatapp.libs.service.requests.database.InsertQueryRQ;
+import xyz.greatapp.libs.service.requests.database.SelectQueryRQ;
+import xyz.greatapp.libs.service.requests.database.UpdateQueryRQ;
 
 @Component
 public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseService
 {
+
     private final ThreadContextService threadContextService;
-    private final DatabaseAdapterFactory queryAgentFactory;
+
+    private final static Map<Environment, String> schemasMap = new HashMap<>();
+    static
+    {
+        schemasMap.put(Environment.DEV, "greatappxyz");
+        schemasMap.put(Environment.PROD, "greatappxyz");
+        schemasMap.put(Environment.AUTOMATION_TEST, "greatappxyz_test");
+        schemasMap.put(Environment.UAT, "greatappxyz_test");
+        schemasMap.put(Environment.INTEGRATION_TEST, "public");
+    }
 
     @Autowired
-    public DatabaseServiceImpl(ThreadContextService threadContextService, DatabaseAdapterFactory queryAgentFactory)
+    public DatabaseServiceImpl(ThreadContextService threadContextService, DatabaseAdapterFactory databaseAdapterFactory)
     {
-        super(threadContextService, queryAgentFactory);
+        super(threadContextService, databaseAdapterFactory);
         this.threadContextService = threadContextService;
-        this.queryAgentFactory = queryAgentFactory;
+    }
+
+    private String getSchema()
+    {
+        return schemasMap.getOrDefault(threadContextService.getEnvironment(), "greatappxyz_test") + ".";
     }
 
     @Override
-    public ServiceResult select(SelectQuery query) throws Exception
+    public ServiceResult select(SelectQueryRQ query) throws Exception
     {
         JSONObject object = getDatabaseAdapter().selectObject(new DbBuilder()
         {
             @Override
             public String sql() throws SQLException
             {
-                return "SELECT * FROM " + query.getTable() + addWhere(query);
-
+                return "SELECT * FROM " + getSchema() + query.getTable() + addWhere(query.getFilters());
             }
+
             @Override
-            public Filter[] values()
+            public ColumnValue[] values()
             {
                 return query.getFilters();
             }
@@ -62,9 +80,9 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
         return new ServiceResult(true, "", object.toString());
     }
 
-    private String addWhere(SelectQuery query)
+    private String addWhere(ColumnValue[] filters)
     {
-        if (query.getFilters() == null || query.getFilters().length == 0)
+        if (filters == null || filters.length == 0)
         {
             return ";";
         }
@@ -72,7 +90,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
         {
             String andClause = " WHERE ";
             StringBuilder whereClause = new StringBuilder(" ");
-            for (Filter filter : query.getFilters())
+            for (ColumnValue filter : filters)
             {
                 whereClause.append(andClause);
                 whereClause.append(filter.getColumn()).append(" = ? ");
@@ -88,27 +106,27 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
         {
             String columnName = resultSet.getMetaData().getColumnName(i);
             Object object = resultSet.getObject(columnName);
-            if(object == null)
+            if (object == null)
                 object = "";
             jsonObject.put(columnName.toLowerCase(), object);
         }
     }
 
     @Override
-    public ServiceResult selectList(SelectQuery query) throws Exception
+    public ServiceResult selectList(SelectQueryRQ query) throws Exception
     {
         JSONArray object = getDatabaseAdapter().selectList(new DbBuilder()
         {
             @Override
             public String sql() throws SQLException
             {
-                return query.getTable();
+                return "SELECT * FROM " + getSchema()  + query.getTable() + addWhere(query.getFilters());
             }
 
             @Override
-            public Filter[] values()
+            public ColumnValue[] values()
             {
-                return new Filter[0];
+                return query.getFilters();
             }
 
             @Override
@@ -124,15 +142,127 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
         return new ServiceResult(true, "", object.toString());
     }
 
-    @Override public ServiceResult insert(InsertQuery query) throws Exception
+    @Override
+    public ServiceResult insert(InsertQueryRQ query) throws Exception
     {
-        long newId = getDatabaseAdapter().executeInsert(query.getQuery(), query.getIdColumnName());
-        return new ServiceResult(true, "", Long.toString(newId));
+        String newId = getDatabaseAdapter().executeInsert(new DbBuilder()
+        {
+            @Override
+            public String sql() throws SQLException
+            {
+                return "INSERT INTO "
+                        + getSchema()  + query.getTable() + " " +
+                        addValuesForInsert(query.getColumnValues(), query.getIdColumnName());
+            }
+
+            @Override
+            public ColumnValue[] values()
+            {
+                return query.getColumnValues();
+            }
+
+            @Override
+            public JSONObject build(ResultSet resultSet) throws Exception
+            {
+                return null;
+            }
+        });
+        return new ServiceResult(true, "", newId);
     }
 
-    @Override public ServiceResult update(UpdateQuery query) throws Exception
+    private String addValuesForInsert(ColumnValue[] columnValues, String idColumnName)
     {
-        int updatedRows = getDatabaseAdapter().executeUpdate(query.getQuery());
-        return new ServiceResult(true, "", Integer.toString(updatedRows));
+        StringBuilder valuesForInsert = new StringBuilder(" (");
+        String separator = "";
+        for (ColumnValue filter : columnValues)
+        {
+            valuesForInsert.append(separator);
+            valuesForInsert.append(filter.getColumn());
+            separator = ", ";
+        }
+        valuesForInsert.append(") VALUES (");
+        separator = "";
+        for (ColumnValue ignored : columnValues)
+        {
+            valuesForInsert.append(separator);
+            valuesForInsert.append("?");
+            separator = ", ";
+        }
+        valuesForInsert.append(") RETURNING ").append(idColumnName).append(";");
+        return valuesForInsert.toString();
+    }
+
+    @Override
+    public ServiceResult update(UpdateQueryRQ query) throws Exception
+    {
+        long updatedRows = getDatabaseAdapter().executeUpdate(new DbBuilder()
+        {
+            @Override
+            public String sql() throws SQLException
+            {
+                return "UPDATE " + getSchema()  + query.getTable()
+                        + " SET " + addSets(query.getSets())
+                        + addWhere(query.getFilters());
+            }
+
+            @Override
+            public ColumnValue[] values()
+            {
+                return ObjectArrays.concat(query.getSets(), query.getFilters(), ColumnValue.class);
+            }
+
+            @Override
+            public JSONObject build(ResultSet resultSet) throws Exception
+            {
+                return null;
+            }
+        });
+        if (updatedRows == 0)
+        {
+            return new ServiceResult(false, "none.rows.were.updated");
+        }
+        return new ServiceResult(true, "", Long.toString(updatedRows));
+    }
+
+    private String addSets(ColumnValue[] sets)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (ColumnValue filter : sets)
+        {
+            sb.append(filter.getColumn()).append(" = ?, ");
+        }
+        sb.replace(sb.lastIndexOf(","), sb.lastIndexOf(",") + 1, "");
+        return sb.toString();
+    }
+
+    @Override
+    public ServiceResult delete(DeleteQueryRQ query) throws Exception
+    {
+        long updatedRows = getDatabaseAdapter().executeUpdate(new DbBuilder()
+        {
+            @Override
+            public String sql() throws SQLException
+            {
+                return "DELETE FROM " + getSchema()  + query.getTable()
+                        + addWhere(query.getFilters());
+            }
+
+            @Override
+            public ColumnValue[] values()
+            {
+                return query.getFilters();
+            }
+
+            @Override
+            public JSONObject build(ResultSet resultSet) throws Exception
+            {
+                return null;
+            }
+        });
+        if (updatedRows == 0)
+        {
+            return new ServiceResult(false, "none.rows.were.updated");
+        }
+        return new ServiceResult(true, "", Long.toString(updatedRows));
     }
 }

@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS users(
-  user_id SERIAL PRIMARY KEY,
+  _id SERIAL PRIMARY KEY,
+  user_id               TEXT UNIQUE NOT NULL,
   name                  TEXT,
   email                 TEXT UNIQUE,
   password              TEXT NOT NULL,
-  rol                   TEXT NOT NULL,
-  must_change_password  BOOLEAN NOT NULL DEFAULT TRUE,
+  role                  TEXT NOT NULL,
+  must_change_password  BOOLEAN NOT NULL DEFAULT FALSE,
   active                BOOLEAN NOT NULL DEFAULT FALSE,
   activation_key        TEXT UNIQUE
 );

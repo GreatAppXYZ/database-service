@@ -42,10 +42,6 @@ public class DataSourceFactoryTest
     {
         dataSourceFactory = new DataSourceFactory(driverManagerDataSourceFactory);
         given(driverManagerDataSourceFactory.createDriverManagerDataSource()).willReturn(driverManagerDataSource);
-        given(driverManagerDataSource.getConnection()).willReturn(connection);
-        given(connection.prepareStatement(anyString())).willReturn(preparedStatement);
-        given(prodEnvironment.getSearchPathSettingQuery()).willReturn("");
-        given(uatEnvironment.getSearchPathSettingQuery()).willReturn("");
     }
 
     @Test
@@ -81,18 +77,5 @@ public class DataSourceFactoryTest
 
         // then
         verify(driverManagerDataSourceFactory, times(2)).createDriverManagerDataSource();
-    }
-
-    @Test
-    public void shouldChangeSearchPathInConnection() throws Exception
-    {
-        //given
-        given(prodEnvironment.getSearchPathSettingQuery()).willReturn("ALTER ROLE users SET search_path = schema");
-
-        // when
-        dataSourceFactory.getDataSource(prodEnvironment);
-
-        // then
-        verify(connection).prepareStatement("ALTER ROLE users SET search_path = schema");
     }
 }

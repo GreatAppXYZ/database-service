@@ -48,8 +48,9 @@ dependencies {
 	compile 'org.springframework.cloud:spring-cloud-starter-config'
 	compile 'org.springframework.boot:spring-boot-starter-web'
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
-	compile 'xyz.my-app:libs:0.0.14'
+	compile 'xyz.greatapp:libs:0.0.19'
 	compile 'org.flywaydb:flyway-core:3.0'
+	compile group: 'com.google.guava', name: 'guava', version: '11.0.2'
 	deployment 'org.flywaydb:flyway-core:3.0'
 	testCompile 'org.mockito:mockito-core:2.8.9'
 	testCompile 'org.springframework.boot:spring-boot-starter-test'

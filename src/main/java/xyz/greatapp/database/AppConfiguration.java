@@ -2,9 +2,9 @@ package xyz.greatapp.database;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import xyz.my_app.libs.service.context.ThreadContextService;
-import xyz.my_app.libs.service.context.ThreadContextServiceImpl;
-import xyz.my_app.libs.service.filters.ContextFilter;
+import xyz.greatapp.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.context.ThreadContextServiceImpl;
+import xyz.greatapp.libs.service.filters.ContextFilter;
 
 @Configuration
 public class AppConfiguration

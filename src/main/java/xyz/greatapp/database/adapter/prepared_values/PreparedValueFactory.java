@@ -1,12 +1,12 @@
 package xyz.greatapp.database.adapter.prepared_values;
 
-import xyz.my_app.libs.service.requests.database.Filter;
-
 import java.sql.PreparedStatement;
+
+import xyz.greatapp.libs.service.requests.database.ColumnValue;
 
 public class PreparedValueFactory
 {
-    public PreparedValue createPreparedValueFor(Filter obj, PreparedStatement statement, int position) {
+    public PreparedValue createPreparedValueFor(ColumnValue obj, PreparedStatement statement, int position) {
 
         if (obj.getValue() == null)
             return new NullPreparedValue(statement, position);

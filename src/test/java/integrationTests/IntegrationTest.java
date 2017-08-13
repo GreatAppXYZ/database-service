@@ -1,6 +1,6 @@
 package integrationTests;
 
-import static xyz.my_app.libs.service.Environment.INTEGRATION_TEST;
+import static xyz.greatapp.libs.service.Environment.INTEGRATION_TEST;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,8 +15,8 @@ import xyz.greatapp.database.adapter.environments.UATEnvironment;
 import xyz.greatapp.database.datasources.DataSourceFactory;
 import xyz.greatapp.database.datasources.DriverManagerDataSourceFactory;
 import xyz.greatapp.database.services.DatabaseServiceImpl;
-import xyz.my_app.libs.service.context.ThreadContextService;
-import xyz.my_app.libs.service.context.ThreadContextServiceImpl;
+import xyz.greatapp.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.context.ThreadContextServiceImpl;
 
 class IntegrationTest
 {

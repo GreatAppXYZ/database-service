@@ -9,7 +9,7 @@ import xyz.greatapp.database.adapter.environments.DatabaseEnvironment;
 import xyz.greatapp.database.adapter.environments.IntegrationTestEnvironment;
 import xyz.greatapp.database.adapter.environments.UATEnvironment;
 import xyz.greatapp.database.datasources.DataSourceFactory;
-import xyz.my_app.libs.service.Environment;
+import xyz.greatapp.libs.service.Environment;
 
 @Component
 public class DatabaseAdapterFactory

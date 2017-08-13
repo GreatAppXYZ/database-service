@@ -6,23 +6,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class AutomationTestEnvironment extends DatabaseEnvironment
 {
-
-    @Value("${db_driver:jdbc:postgresql://}")
+    @Value("jdbc:savepointpgproxy://")
     private String dbDriver;
 
-    @Value("${db_driver_class:com.greatappxyz.database.common.db.jdbc.SavepointPgProxyDriver}")
+    @Value("xyz.greatapp.database.automation_database_driver.SavepointPgProxyDriver")
     private String dbDriverClass;
 
-    @Value("${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432}")
+    @Value("jdbc:savepointpgproxy://localhost:5432")
     private String dbUrl;
 
-    @Value("${JDBC_DATABASE_USERNAME:postgres}")
+    @Value("postgres")
     private String dbUser;
 
-    @Value("${JDBC_DATABASE_PASSWORD:secret}")
+    @Value("root")
     private String dbPassword;
 
-    @Value("${db_schema:greatappxyz}")
+    @Value("greatappxyz_test")
     private String schema;
 
     @Override
@@ -76,7 +75,7 @@ public class AutomationTestEnvironment extends DatabaseEnvironment
         {
             return false;
         }
-        DevEnvironment that = (DevEnvironment) obj;
+        AutomationTestEnvironment that = (AutomationTestEnvironment) obj;
         return getDatabasePath().equals(that.getDatabasePath());
     }
 

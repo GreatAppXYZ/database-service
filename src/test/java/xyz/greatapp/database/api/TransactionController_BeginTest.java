@@ -7,9 +7,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.OK;
 import static xyz.greatapp.database.api.ControllerAssertions.assertFailedResponse;
-import static xyz.my_app.libs.service.Environment.PROD;
-import static xyz.my_app.libs.service.Environment.AUTOMATION_TEST;
-import static xyz.my_app.libs.service.Environment.UAT;
+import static xyz.greatapp.libs.service.Environment.AUTOMATION_TEST;
+import static xyz.greatapp.libs.service.Environment.PROD;
+import static xyz.greatapp.libs.service.Environment.UAT;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +17,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
-import xyz.greatapp.database.libs.ServiceLogger;
 import xyz.greatapp.database.api.interfaces.TransactionService;
-import xyz.my_app.libs.service.ServiceResult;
-import xyz.my_app.libs.service.context.ThreadContextService;
+import xyz.greatapp.libs.service.ServiceResult;
+import xyz.greatapp.libs.service.context.ThreadContextService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionController_BeginTest
@@ -30,13 +29,11 @@ public class TransactionController_BeginTest
     private TransactionService transactionService;
     @Mock
     private ThreadContextService threadContextService;
-    @Mock
-    private ServiceLogger serviceLogger;
 
     @Before
     public void setUp() throws Exception
     {
-        transactionController = new TransactionController(transactionService, threadContextService, serviceLogger);
+        transactionController = new TransactionController(transactionService, threadContextService);
         given(threadContextService.getEnvironment()).willReturn(AUTOMATION_TEST);
     }
 
@@ -50,7 +47,7 @@ public class TransactionController_BeginTest
         ResponseEntity<ServiceResult> response = transactionController.begin();
 
         //then
-        assertFailedResponse(response, serviceLogger);
+        assertFailedResponse(response);
     }
 
     @Test
