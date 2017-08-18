@@ -1,6 +1,5 @@
 #!/bin/bash
-pwd
-cd .
+cd src/greatappxyz/database-service
 title='Database Service'
 echo -n -e "\033]0;$title\007"
 sh gradlew build -x test
