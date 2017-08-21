@@ -1,7 +1,7 @@
 package xyz.greatapp.database.services;
 
 import xyz.greatapp.database.api.interfaces.TransactionService;
-import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
+import xyz.greatapp.libs.database.adapter.DatabaseAdapterFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import xyz.greatapp.libs.service.context.ThreadContextService;

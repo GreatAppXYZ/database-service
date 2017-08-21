@@ -1,7 +1,7 @@
 package xyz.greatapp.database.services;
 
-import xyz.greatapp.database.adapter.DataBaseAdapter;
-import xyz.greatapp.database.adapter.DatabaseAdapterFactory;
+import xyz.greatapp.libs.database.adapter.DataBaseAdapter;
+import xyz.greatapp.libs.database.adapter.DatabaseAdapterFactory;
 import xyz.greatapp.libs.service.context.ThreadContextService;
 
 class BaseServiceImpl
