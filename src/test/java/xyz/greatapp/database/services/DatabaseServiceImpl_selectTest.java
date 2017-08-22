@@ -47,29 +47,8 @@ public class DatabaseServiceImpl_selectTest
             }
         };
         when(threadContextService.getEnvironment()).thenReturn(DEV);
-        when(databaseAdapter.selectObject(any())).thenReturn(new JSONObject());
         when(databaseAdapter.selectList(any())).thenReturn(new JSONArray());
         when(databaseAdapter.executeInsert(any())).thenReturn("");
-    }
-
-    @Test
-    public void shouldConvertRequestOnSelectStatement() throws Exception
-    {
-        // given
-        SelectQueryRQ query = new SelectQueryRQ("table", new ColumnValue[] {
-                new ColumnValue("column1", "value1"),
-                new ColumnValue("column2", "value2")
-        });
-
-        // when
-        databaseService.select(query);
-
-        // then
-        ArgumentCaptor<DbBuilder> dbBuilder = ArgumentCaptor.forClass(DbBuilder.class);
-        verify(databaseAdapter).selectObject(dbBuilder.capture());
-
-        String sql = dbBuilder.getValue().sql();
-        assertEquals("SELECT * FROM greatappxyz.table  WHERE column1 = ?  AND column2 = ? ;", sql);
     }
 
     @Test
