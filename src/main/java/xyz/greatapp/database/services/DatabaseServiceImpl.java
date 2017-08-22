@@ -1,13 +1,13 @@
 package xyz.greatapp.database.services;
 
 import com.google.common.collect.ObjectArrays;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import xyz.greatapp.database.api.interfaces.DatabaseService;
 import xyz.greatapp.libs.database.adapter.DatabaseAdapterFactory;
 import xyz.greatapp.libs.database.queries.Select;
+import xyz.greatapp.libs.database.queries.SelectList;
 import xyz.greatapp.libs.database.util.DbBuilder;
 import xyz.greatapp.libs.service.Environment;
 import xyz.greatapp.libs.service.ServiceResult;
@@ -65,39 +65,10 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
         }
     }
 
-    private void buildObject(ResultSet resultSet, int columnCount, JSONObject jsonObject) throws Exception {
-        for (int i = 1; i <= columnCount; i++) {
-            String columnName = resultSet.getMetaData().getColumnName(i);
-            Object object = resultSet.getObject(columnName);
-            if (object == null)
-                object = "";
-            jsonObject.put(columnName.toLowerCase(), object);
-        }
-    }
-
     @Override
     public ServiceResult selectList(SelectQueryRQ query) throws Exception {
-        JSONArray object = getDatabaseAdapter().selectList(new DbBuilder() {
-            @Override
-            public String sql() throws SQLException {
-                return "SELECT * FROM " + getSchema() + query.getTable() + addWhere(query.getFilters());
-            }
-
-            @Override
-            public ColumnValue[] values() {
-                return query.getFilters();
-            }
-
-            @Override
-            public JSONObject build(ResultSet resultSet) throws Exception {
-                int columnCount = resultSet.getMetaData().getColumnCount();
-                JSONObject jsonObject = new JSONObject();
-                buildObject(resultSet, columnCount, jsonObject);
-                return jsonObject;
-            }
-        });
-
-        return new ServiceResult(true, "", object.toString());
+        return new SelectList(getDatabaseAdapter(), getSchema(), query)
+                .execute();
     }
 
     @Override

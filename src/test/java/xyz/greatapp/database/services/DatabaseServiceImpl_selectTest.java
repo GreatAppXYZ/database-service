@@ -1,13 +1,6 @@
 package xyz.greatapp.database.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static xyz.greatapp.libs.service.Environment.DEV;
-
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +14,16 @@ import xyz.greatapp.libs.service.context.ThreadContextService;
 import xyz.greatapp.libs.service.requests.database.ColumnValue;
 import xyz.greatapp.libs.service.requests.database.DeleteQueryRQ;
 import xyz.greatapp.libs.service.requests.database.InsertQueryRQ;
-import xyz.greatapp.libs.service.requests.database.SelectQueryRQ;
 import xyz.greatapp.libs.service.requests.database.UpdateQueryRQ;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static xyz.greatapp.libs.service.Environment.DEV;
+
 @RunWith(MockitoJUnitRunner.class)
-public class DatabaseServiceImpl_selectTest
-{
+public class DatabaseServiceImpl_selectTest {
     private DatabaseServiceImpl databaseService;
     @Mock
     private ThreadContextService threadContextService;
@@ -36,46 +33,21 @@ public class DatabaseServiceImpl_selectTest
     private DataBaseAdapter databaseAdapter;
 
     @Before
-    public void setUp() throws Exception
-    {
-        databaseService = new DatabaseServiceImpl(threadContextService, databaseAdapterFactory)
-        {
+    public void setUp() throws Exception {
+        databaseService = new DatabaseServiceImpl(threadContextService, databaseAdapterFactory) {
             @Override
-            DataBaseAdapter getDatabaseAdapter() throws Exception
-            {
+            DataBaseAdapter getDatabaseAdapter() throws Exception {
                 return databaseAdapter;
             }
         };
         when(threadContextService.getEnvironment()).thenReturn(DEV);
-        when(databaseAdapter.selectList(any())).thenReturn(new JSONArray());
         when(databaseAdapter.executeInsert(any())).thenReturn("");
     }
 
     @Test
-    public void selectListShouldConvertRequestOnSelectStatement() throws Exception
-    {
+    public void shouldConvertRequestOnInsertStatement() throws Exception {
         // given
-        SelectQueryRQ query = new SelectQueryRQ("table", new ColumnValue[] {
-                new ColumnValue("column1", "value1"),
-                new ColumnValue("column2", "value2")
-        });
-
-        // when
-        databaseService.selectList(query);
-
-        // then
-        ArgumentCaptor<DbBuilder> dbBuilder = ArgumentCaptor.forClass(DbBuilder.class);
-        verify(databaseAdapter).selectList(dbBuilder.capture());
-
-        String sql = dbBuilder.getValue().sql();
-        assertEquals("SELECT * FROM greatappxyz.table  WHERE column1 = ?  AND column2 = ? ;", sql);
-    }
-
-    @Test
-    public void shouldConvertRequestOnInsertStatement() throws Exception
-    {
-        // given
-        InsertQueryRQ query = new InsertQueryRQ("table", new ColumnValue[] {
+        InsertQueryRQ query = new InsertQueryRQ("table", new ColumnValue[]{
                 new ColumnValue("column1", "value1"),
                 new ColumnValue("column2", "value2")
         }, "id");
@@ -92,15 +64,14 @@ public class DatabaseServiceImpl_selectTest
     }
 
     @Test
-    public void shouldConvertRequestOnUpdateStatement() throws Exception
-    {
+    public void shouldConvertRequestOnUpdateStatement() throws Exception {
         // given
-        UpdateQueryRQ query = new UpdateQueryRQ("table", new ColumnValue[] {
+        UpdateQueryRQ query = new UpdateQueryRQ("table", new ColumnValue[]{
                 new ColumnValue("column1", "value1"),
                 new ColumnValue("column2", "value2")
-        }, new ColumnValue[] {
+        }, new ColumnValue[]{
                 new ColumnValue("column3", "value3"),
-                new ColumnValue("column4", "value4") });
+                new ColumnValue("column4", "value4")});
 
         // when
         databaseService.update(query);
@@ -114,12 +85,11 @@ public class DatabaseServiceImpl_selectTest
     }
 
     @Test
-    public void shouldConvertRequestOnDeleteStatement() throws Exception
-    {
+    public void shouldConvertRequestOnDeleteStatement() throws Exception {
         // given
-        DeleteQueryRQ query = new DeleteQueryRQ("table", new ColumnValue[] {
+        DeleteQueryRQ query = new DeleteQueryRQ("table", new ColumnValue[]{
                 new ColumnValue("column1", "value1"),
-                new ColumnValue("column2", "value2") });
+                new ColumnValue("column2", "value2")});
 
         // when
         databaseService.delete(query);

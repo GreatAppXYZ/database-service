@@ -49,7 +49,7 @@ dependencies {
 	compile 'org.springframework.boot:spring-boot-starter-web'
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	compile 'xyz.greatapp:libs:0.0.19'
-	compile 'xyz.greatapp:libs-database:0.0.3'
+	compile 'xyz.greatapp:libs-database:0.0.4'
 	compile 'org.flywaydb:flyway-core:3.0'
 	compile group: 'com.google.guava', name: 'guava', version: '11.0.2'
 	deployment 'org.flywaydb:flyway-core:3.0'
