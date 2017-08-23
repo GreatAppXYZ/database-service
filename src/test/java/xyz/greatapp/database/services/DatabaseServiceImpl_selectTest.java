@@ -41,7 +41,6 @@ public class DatabaseServiceImpl_selectTest {
             }
         };
         when(threadContextService.getEnvironment()).thenReturn(DEV);
-        when(databaseAdapter.executeInsert(any())).thenReturn("");
     }
 
     @Test

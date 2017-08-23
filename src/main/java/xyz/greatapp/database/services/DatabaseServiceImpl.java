@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import xyz.greatapp.database.api.interfaces.DatabaseService;
 import xyz.greatapp.libs.database.adapter.DatabaseAdapterFactory;
+import xyz.greatapp.libs.database.queries.Insert;
 import xyz.greatapp.libs.database.queries.Select;
 import xyz.greatapp.libs.database.queries.SelectList;
 import xyz.greatapp.libs.database.util.DbBuilder;
@@ -73,44 +74,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 
     @Override
     public ServiceResult insert(InsertQueryRQ query) throws Exception {
-        String newId = getDatabaseAdapter().executeInsert(new DbBuilder() {
-            @Override
-            public String sql() throws SQLException {
-                return "INSERT INTO "
-                        + getSchema() + query.getTable() + " " +
-                        addValuesForInsert(query.getColumnValues(), query.getIdColumnName());
-            }
-
-            @Override
-            public ColumnValue[] values() {
-                return query.getColumnValues();
-            }
-
-            @Override
-            public JSONObject build(ResultSet resultSet) throws Exception {
-                return null;
-            }
-        });
-        return new ServiceResult(true, "", newId);
-    }
-
-    private String addValuesForInsert(ColumnValue[] columnValues, String idColumnName) {
-        StringBuilder valuesForInsert = new StringBuilder(" (");
-        String separator = "";
-        for (ColumnValue filter : columnValues) {
-            valuesForInsert.append(separator);
-            valuesForInsert.append(filter.getColumn());
-            separator = ", ";
-        }
-        valuesForInsert.append(") VALUES (");
-        separator = "";
-        for (ColumnValue ignored : columnValues) {
-            valuesForInsert.append(separator);
-            valuesForInsert.append("?");
-            separator = ", ";
-        }
-        valuesForInsert.append(") RETURNING ").append(idColumnName).append(";");
-        return valuesForInsert.toString();
+        return new Insert(getDatabaseAdapter(), getSchema(), query)
+                .execute();
     }
 
     @Override
